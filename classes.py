@@ -14,9 +14,15 @@ class Network:
 			return self.client.recv(2048).decode()
 		except:
 			pass
-	def send_recv(self, data):
+
+	def send(self, data):
 		try:
-			self.client.send(str.encode(data))
+			self.client.send(str(data).encode())
+		except socket.error as e:
+			print(e)
+
+	def listen(self):
+		try:
 			return self.client.recv(2048).decode()
 		except socket.error as e:
 			print(e)
@@ -55,6 +61,7 @@ class Player(Sprite):
 		self.speed = 4
 		self.gravity = 1
 		self.j_speed = 20
+		self.data_players = ""
 		self.prev_key = pygame.key.get_pressed()
 
 	def walk_animation(self):
@@ -122,15 +129,20 @@ class Player(Sprite):
 			dx -= numpy.sign(x)
 		self.rect.move_ip([dx, dy])
 
-		self.data_players = self.network.send_recv(
+		self.network.send(
 			f"{self.id},{self.rect.x},{self.rect.y},{self.facing_left},{self.w_index}"
 		)
 
 	def check_collision(self, x, y, ground):
 		self.rect.move_ip([x, y])
-		collide = pygame.sprite.spritecollide(self, ground)
+		collide = pygame.sprite.spritecollideany(self, ground)
 		self.rect.move_ip([-x, -y])
 		return collide
+	
+	def listen(self):
+		while True:
+			self.data_players = self.network.listen()
+
 
 class OtherPlayer(Sprite):
 	def __init__(self, x, y):
@@ -154,16 +166,10 @@ class OtherPlayer(Sprite):
 			self.old_w_index = self.w_index
 		else:
 			self.image = self.stand_image
-			if self.facing_left:
-				self.image = pygame.transform.flip(self.image, True, False)
 
 		if self.old_y != self.rect.y:
 			self.jump_animation()
 			self.old_y = self.rect.y
-		else:
-			self.image = self.stand_image
-			if self.facing_left:
-				self.image = pygame.transform.flip(self.image, True, False)
 		
 	def walk_animation(self):
 		self.image = self.w_cycle[self.w_index]
