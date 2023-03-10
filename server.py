@@ -16,7 +16,7 @@ def threaded_client(conn, player):
 				break
 			else:
 				players[player] = data
-				message = [p for i, p in enumerate(players) if i != player and p != "-42,-42,-42,-42"]
+				message = [p for i, p in enumerate(players) if i != player and p != "-42"]
 				print(message)
 				conn.sendall(str(message).encode())
 		
@@ -44,7 +44,7 @@ def main():
 		conn, addr = s.accept()
 		print("Conectado a:", addr)
 
-		players.append(f"-42,-42,-42,-42")
+		players.append("-42")
 		start_new_thread(threaded_client, (conn, player))
 		player += 1
 
