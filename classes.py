@@ -129,9 +129,11 @@ class Player(Sprite):
 			dx -= numpy.sign(x)
 		self.rect.move_ip([dx, dy])
 
-		self.network.send(
-			f"{self.id},{self.rect.x},{self.rect.y},{self.facing_left},{self.w_index}"
-		)
+		msg = "UPDATE ("
+		msg += f"\n{self.id},{self.rect.x},{self.rect.y},{self.facing_left},{self.w_index}"
+		msg += "\n)"
+
+		self.network.send(msg)
 
 	def check_collision(self, x, y, ground):
 		self.rect.move_ip([x, y])

@@ -3,6 +3,13 @@ from _thread import *
 
 players = []
 
+def parser(data):
+	method = data.split(" ")[0]
+	aux = data.split(" ")[1]
+	aux = aux[2:-2]
+	data = aux.split("\n")
+	return method, data
+
 def threaded_client(conn, player):
 	conn.send(str(player).encode())
 
@@ -11,14 +18,20 @@ def threaded_client(conn, player):
 			data = conn.recv(2048).decode()
 			if not data:
 				print("Desconectado")
-				players.remove(player)
-				print(players)
+				players[player] = "-42"
 				break
 			else:
-				players[player] = data
-				message = [p for i, p in enumerate(players) if i != player and p != "-42"]
-				print(message)
-				conn.sendall(str(message).encode())
+				method, data = parser(data)
+
+				if method == "UPDATE":
+					players[player] = data
+
+					msg = "UPDATE_USERS ("
+					for _id, content in enumerate(players):
+						if _id != player and content != "-42":
+							msg += f"\n{content}"
+					msg += "\n)"
+					conn.sendall(str(msg).encode())
 		
 		except:
 			break
@@ -36,7 +49,7 @@ def main():
 	except socket.error as e:
 		print("bind erro: " + str(e))
 
-	s.listen(4)
+	s.listen(2)
 	print("Aguardando conexão, servidor iniciado")
 
 	player = 0

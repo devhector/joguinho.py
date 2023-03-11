@@ -16,6 +16,26 @@ def create_phase(boxes):
 	boxes.add(Box(360, 500))
 	boxes.add(Box(100, 70))
 
+def update_users(data, other):
+	data = data[2:-2]
+	data = data.split(",")
+	other.rect.x = int(data[1])
+	other.rect.y = int(data[2])
+	other.facing_left = data[3] == "True"
+	other.w_index = int(data[4])
+	other.update()
+	return other
+	
+
+def parser(data):
+	if data == "":
+		return "", []
+	method = data.split(" ")[0]
+	data = data.split(" ")[1]
+	data = data[2:-2]
+	if "\n" in data:
+		data = data.split("\n")
+	return method, data
 
 def main():
 	pygame.init()
@@ -24,7 +44,9 @@ def main():
 	clock = pygame.time.Clock()
 
 	player = Player(100, 200)
-	players = {}
+	other = OtherPlayer(100, 200)
+
+	flag = False
 
 	boxes = pygame.sprite.Group()
 	create_phase(boxes)
@@ -38,29 +60,18 @@ def main():
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				run = False
-		print("player.data_players: " + player.data_players)
-		if player.data_players != "":
-			data_players = player.data_players[1:-1]
-			data_players = data_players.split("),(")
-			players_list = [p.replace("'", "") for p in data_players]
-			players_list = [p.replace(" ", "") for p in players_list]
-			for p in players_list:
-				p = p.split(",")
-				if p != ['']:
-					if p[0] != str(player.id):
-						if p[0] in players:
-							players[p[0]].rect.x = int(p[1])
-							players[p[0]].rect.y = int(p[2])
-							players[p[0]].facing_left = p[3] == "True"
-							players[p[0]].w_index = int(p[4])
-							players[p[0]].update()
-						else:
-							players[p[0]] = OtherPlayer(int(p[1]), int(p[2]))
+
+		method, data = parser(player.data_players)
+
+		if len(data) > 0:
+			if method == "UPDATE_USERS":
+				flag = True
+				other = update_users(data, other)
 
 		screen.fill(BACKGROUND)
-		for i in players:
-			players[i].draw(screen)
 
+		if flag:
+			other.draw(screen)
 		player.update(boxes)
 		player.draw(screen)
 		boxes.draw(screen)
