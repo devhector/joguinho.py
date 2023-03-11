@@ -199,7 +199,7 @@ class Coin(Sprite):
 		self.cycle = [
 			pygame.transform.scale(img, img_size) 
 			for img in self.cycle
-			]
+		]
 
 	def animate(self):
 		self.image = self.cycle[self.index]

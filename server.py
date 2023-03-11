@@ -17,7 +17,7 @@ def threaded_client(conn, player):
 		try:
 			data = conn.recv(2048).decode()
 			if not data:
-				print("Desconectado")
+				print(f"Jogador {player} desconectado")
 				players[player] = "-42"
 				break
 			else:
@@ -39,6 +39,8 @@ def threaded_client(conn, player):
 		
 		except:
 			break
+
+
 	conn.close()
 
 def main():

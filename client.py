@@ -74,6 +74,7 @@ def main():
 		screen.fill(BACKGROUND)
 		screen.blit(text, textRect)
 		pygame.display.update()
+
 		if len(data) > 0:
 			if method == "GAME" and data == "start":
 				break
@@ -91,6 +92,9 @@ def main():
 		if len(data) > 0:
 			if method == "UPDATE_USERS":
 				other = update_users(data, other)
+		else:
+			other.rect.x = WIDTH + 50
+			other.rect.y = HEIGHT + 50
 
 		screen.fill(BACKGROUND)
 		coin.update()
