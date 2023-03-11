@@ -186,3 +186,29 @@ class OtherPlayer(Sprite):
 class Box(Sprite):
 	def __init__(self, x, y):
 		super().__init__("./assets/boxAlt.png", x, y)
+
+class Coin(Sprite):
+	def __init__(self, x, y):
+		super().__init__("./assets/coin/coin0.png", x, y)
+		self.index = 0
+		img_size = (60, 60)
+		self.cycle = [
+			pygame.image.load(f"./assets/coin/coin{i}.png")
+			for i in range(0, 9)
+		]
+		self.cycle = [
+			pygame.transform.scale(img, img_size) 
+			for img in self.cycle
+			]
+
+	def animate(self):
+		self.image = self.cycle[self.index]
+
+		if self.index >= len(self.cycle) - 1:
+			self.index = 0
+		else:
+			self.index += 1
+
+	def update(self):
+		if pygame.time.get_ticks() % 5 == 0:
+			self.animate()
