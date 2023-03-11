@@ -25,7 +25,6 @@ def update_users(data, other):
 	other.w_index = int(data[4])
 	other.update()
 	return other
-	
 
 def parser(data):
 	if data == "":
@@ -43,8 +42,14 @@ def main():
 	pygame.display.set_caption("Joguinho maneiro")
 	clock = pygame.time.Clock()
 
+	font = pygame.font.Font("./assets/font/Bubble_Bobble.ttf", 75)
+	text = font.render("Waiting for another player", True, (240, 162, 60))
+	textRect = text.get_rect()
+	textRect.center = (WIDTH // 2, HEIGHT // 2)
+
 	player = Player(100, 200)
 	other = OtherPlayer(100, 200)
+	coin = Coin(300, 100)
 
 	flag = False
 
@@ -52,6 +57,26 @@ def main():
 	create_phase(boxes)
 
 	player.listen_thread = start_new_thread(player.listen, ())
+
+	while True:
+
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				quit()
+		if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+			pygame.quit()
+			quit()
+
+		msg = "GAME (\n\n)"
+		player.network.send(msg)
+		method, data = parser(player.data_players)
+		screen.fill(BACKGROUND)
+		screen.blit(text, textRect)
+		pygame.display.update()
+		if len(data) > 0:
+			if method == "GAME" and data == "start":
+				break
 
 	run = True
 	while run:
@@ -65,13 +90,12 @@ def main():
 
 		if len(data) > 0:
 			if method == "UPDATE_USERS":
-				flag = True
 				other = update_users(data, other)
 
 		screen.fill(BACKGROUND)
-
-		if flag:
-			other.draw(screen)
+		coin.update()
+		coin.draw(screen)
+		other.draw(screen)
 		player.update(boxes)
 		player.draw(screen)
 		boxes.draw(screen)

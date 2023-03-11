@@ -32,6 +32,10 @@ def threaded_client(conn, player):
 							msg += f"\n{content}"
 					msg += "\n)"
 					conn.sendall(str(msg).encode())
+
+				if method == "GAME" and len(players) == 2:
+					msg = "GAME (\nstart\n)"
+					conn.send(str(msg).encode())
 		
 		except:
 			break
