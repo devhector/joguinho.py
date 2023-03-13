@@ -2,6 +2,23 @@ import socket
 from _thread import *
 
 players = []
+score = []
+
+coins = [
+	'0,20,20,False',
+	'1,20,320,False',
+	'2,220,170,False',
+	'3,220,475,False',
+	'4,430,580,False',
+	'5,840,160,False',
+	'6,840,300,False',
+	'7,840,440,False',
+	'8,840,580,False',
+	'9,630,160,False',
+	'10,630,300,False',
+	'11,630,440,False',
+	'12,630,580,False',
+]
 
 def parser(data):
 	method = data.split(" ")[0]
@@ -33,9 +50,17 @@ def threaded_client(conn, player):
 					msg += "\n)"
 					conn.sendall(str(msg).encode())
 
-				if method == "GAME" and len(players) == 2:
+				if method == "GAME" and len(players) > 1:
 					msg = "GAME (\nstart\n)"
 					conn.send(str(msg).encode())
+				
+				if method == "GET_COINS":
+					msg = "COINS ("
+					for coin in coins:
+						msg += f"\n{coin}"
+					msg += "\n)"
+					conn.send(str(msg).encode())
+
 		
 		except:
 			break
@@ -64,6 +89,7 @@ def main():
 		print("Conectado a:", addr)
 
 		players.append("-42")
+		score.append(0)
 		start_new_thread(threaded_client, (conn, player))
 		player += 1
 
