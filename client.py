@@ -49,7 +49,7 @@ def main():
 
 	player = Player(100, 200)
 	other = OtherPlayer(100, 200)
-	coin = Coin(300, 100)
+	# coin = Coin(300, 100)
 
 	flag = False
 
@@ -97,8 +97,8 @@ def main():
 			other.rect.y = HEIGHT + 50
 
 		screen.fill(BACKGROUND)
-		coin.update()
-		coin.draw(screen)
+		# coin.update()
+		# coin.draw(screen)
 		other.draw(screen)
 		player.update(boxes)
 		player.draw(screen)
