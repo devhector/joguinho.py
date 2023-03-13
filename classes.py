@@ -188,8 +188,10 @@ class Box(Sprite):
 		super().__init__("./assets/boxAlt.png", x, y)
 
 class Coin(Sprite):
-	def __init__(self, x, y):
+	def __init__(self, x, y, id, is_collected):
 		super().__init__("./assets/coin/coin0.png", x, y)
+		self.id = id
+		self.is_collected = is_collected
 		self.index = 0
 		img_size = (60, 60)
 		self.cycle = [
