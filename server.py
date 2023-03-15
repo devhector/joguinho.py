@@ -1,6 +1,7 @@
 import socket
 from _thread import *
 
+old_players = []
 players = []
 score = []
 
@@ -50,18 +51,31 @@ def threaded_client(conn, player):
 					msg += "\n)"
 					conn.sendall(str(msg).encode())
 
-				if method == "GAME" and len(players) > 1:
+				if method == "GAME" and len(players) == 2:
 					msg = "GAME (\nstart\n)"
 					conn.send(str(msg).encode())
 				
 				if method == "GET_COINS":
-					msg = "COINS ("
+					msg = "UPDATE_COINS ("
 					for coin in coins:
 						msg += f"\n{coin}"
 					msg += "\n)"
 					conn.send(str(msg).encode())
+				
+				if method == "UPDATE_COIN":
+					score[player] += 1
+					print(f"score({player}): ", score[player])
 
-		
+				_sum = 0
+				for i in score:
+					_sum += i
+
+				if _sum == 12:
+					for i in range(len(score)):
+						if score[i] == max(score):
+							winner = i
+					conn.send(str(f"GAME_OVER (\n{winner}\n)").encode())
+				
 		except:
 			break
 

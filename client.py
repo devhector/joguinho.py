@@ -43,28 +43,35 @@ def create_phase2(boxes):
 	boxes.add(Box(510, 180))
 
 def update_users(data, other):
-	data = data[2:-2]
-	data = data.split(",")
-	other.rect.x = int(data[1])
-	other.rect.y = int(data[2])
-	other.facing_left = data[3] == "True"
-	other.w_index = int(data[4])
-	other.update()
+	try:
+		data = data[2:-2]
+		data = data.split(",")
+		other.rect.x = int(data[1])
+		other.rect.y = int(data[2])
+		other.facing_left = data[3] == "True"
+		other.w_index = int(data[4])
+	except:
+		pass
 	return other
+
 
 def get_coins(data):
 	coins = pygame.sprite.Group()
-	for coin in data:
-		coin = coin.split(",")
-		coins.add(
-			Coin(
+	try:
+		for coin in data:
+			coin = coin.split(",")
+			coins.add(
+				Coin(
 					int(coin[1]),
 					int(coin[2]),
 					int(coin[0]),
 					coin[3] == "True"
-				)
-		)
+					)
+			)
+	except:
+		pass
 	return coins
+
 
 def parser(data):
 	if data == "":
@@ -90,8 +97,6 @@ def main():
 	player = Player(40, 500)
 	other = OtherPlayer(0, 0)
 
-	flag = False
-
 	boxes = pygame.sprite.Group()
 	create_phase2(boxes)
 
@@ -102,7 +107,7 @@ def main():
 		method, data = parser(player.data_players)
 		print (data)
 		if len(data) > 0:
-			if method == "COINS":
+			if method == "UPDATE_COINS":
 				coins = get_coins(data)
 				break
 
@@ -117,8 +122,7 @@ def main():
 			pygame.quit()
 			quit()
 
-		msg = "GAME (\n\n)"
-		player.network.send(msg)
+		player.network.send("GAME (\n\n)")
 		method, data = parser(player.data_players)
 		screen.fill(BACKGROUND)
 		screen.blit(text, textRect)
@@ -128,6 +132,7 @@ def main():
 			if method == "GAME" and data == "start":
 				break
 
+	win_player = ''
 	run = True
 	while run:
 		clock.tick(FPS)
@@ -141,18 +146,46 @@ def main():
 		if len(data) > 0:
 			if method == "UPDATE_USERS":
 				other = update_users(data, other)
+			if method == "GAME_OVER":
+				win_player = data[0]
+				run = False
 		else:
 			other.rect.x = WIDTH + 50
 			other.rect.y = HEIGHT + 50
 
 		screen.fill(BACKGROUND)
+		other.update(coins)
 		other.draw(screen)
-		player.update(boxes)
+		player.update(boxes, coins)
 		player.draw(screen)
 		coins.update()
 		coins.draw(screen)
 		boxes.draw(screen)
 		pygame.display.update()
+
+	win_player = str(int(win_player) + 1)
+	text = font.render(f"GAME OVER | PLAYER {win_player} WIN!", True, (240, 162, 60))
+	text2 = font.render("PRESS ESC TO QUIT", True, (240, 162, 60))
+	textRect = text.get_rect()
+	textRect2 = text2.get_rect()
+	textRect.center = (WIDTH // 2, HEIGHT // 2 - 100)
+	textRect2.center = (WIDTH // 2, HEIGHT // 2)
+
+	run = True
+	while run:
+		clock.tick(FPS)
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				quit()
+		if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+			pygame.quit()
+			quit()
+		screen.fill(BACKGROUND)
+		screen.blit(text, textRect)
+		screen.blit(text2, textRect2)
+		pygame.display.update()
+
 
 	pygame.quit()
 
