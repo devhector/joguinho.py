@@ -24,4 +24,5 @@ Para executar o servidor:
 Para executar o cliente:
 `python client.py`
 
-![demo](./assets/demo_.gif)
+https://user-images.githubusercontent.com/31700014/225479111-00d6898d-1b4a-4aff-bb9a-8b2bd9a045dc.mp4
+
