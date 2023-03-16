@@ -24,4 +24,4 @@ Para executar o servidor:
 Para executar o cliente:
 `python client.py`
 
-![demo](./assets/demo.gif)
+![demo](./assets/demo_.gif)
