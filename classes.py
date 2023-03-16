@@ -1,5 +1,8 @@
 import pygame, numpy, socket
 
+WIDTH = 900
+HEIGHT = int(WIDTH * 0.8)
+
 class Network:
 	def __init__(self):
 		self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -57,6 +60,11 @@ class Player(Sprite):
 		self.network = Network()
 		self.id = self.network.id
 
+		self.init_x = x
+		self.init_y = y
+
+		self.coins_collected = 0
+
 		self.vsp = 0
 		self.speed = 4
 		self.gravity = 1
@@ -79,7 +87,7 @@ class Player(Sprite):
 		if self.facing_left:
 			self.image = pygame.transform.flip(self.image, True, False)
 
-	def update(self, boxes):
+	def update(self, boxes, coins):
 		hsp = 0
 		onground = self.check_collision(0, 1, boxes)
 
@@ -117,9 +125,9 @@ class Player(Sprite):
 		if self.vsp > 0:
 			self.vsp += 0
 
-		self.move(hsp, self.vsp, boxes)
+		self.move(hsp, self.vsp, boxes, coins)
 
-	def move (self, x, y, boxes):
+	def move (self, x, y, boxes, coins):
 		dx = x
 		dy = y
 
@@ -129,9 +137,15 @@ class Player(Sprite):
 			dx -= numpy.sign(x)
 		self.rect.move_ip([dx, dy])
 
-		self.network.send(
-			f"{self.id},{self.rect.x},{self.rect.y},{self.facing_left},{self.w_index}"
-		)
+		#checar se personagem caiu no buraco
+		if self.rect.y > HEIGHT * 2:
+			self.rect.x = self.init_x
+			self.rect.y = self.init_y
+
+		self.send_position()
+
+		if self.check_collect_coins(coins):
+			self.network.send("UPDATE_COIN (\n\n)")
 
 	def check_collision(self, x, y, ground):
 		self.rect.move_ip([x, y])
@@ -139,9 +153,25 @@ class Player(Sprite):
 		self.rect.move_ip([-x, -y])
 		return collide
 	
+	def check_collect_coins(self, coins):
+		for coin in coins:
+			if self.rect.colliderect(coin.rect):
+				coin.kill()
+				coins.remove(coin)
+				self.coins_collected += 1
+				return True
+		return False
+	
 	def listen(self):
 		while True:
 			self.data_players = self.network.listen()
+	
+	def send_position(self):
+		msg = "UPDATE ("
+		msg += f"\n{self.id},{self.rect.x},{self.rect.y},{self.facing_left},{self.w_index}"
+		msg += "\n)"
+
+		self.network.send(msg)
 
 
 class OtherPlayer(Sprite):
@@ -160,7 +190,7 @@ class OtherPlayer(Sprite):
 		self.old_y = self.rect.y
 		self.facing_left = False
 	
-	def update(self):
+	def update(self, coins):
 		if self.old_w_index != self.w_index:
 			self.walk_animation()
 			self.old_w_index = self.w_index
@@ -171,6 +201,9 @@ class OtherPlayer(Sprite):
 			self.jump_animation()
 			self.old_y = self.rect.y
 		
+		self.check_collect_coins(coins)
+
+		
 	def walk_animation(self):
 		self.image = self.w_cycle[self.w_index]
 		if self.facing_left:
@@ -180,7 +213,43 @@ class OtherPlayer(Sprite):
 		self.image = self.j_image
 		if self.facing_left:
 			self.image = pygame.transform.flip(self.image, True, False)
+	
+	def check_collect_coins(self, coins):
+		for coin in coins:
+			if self.rect.colliderect(coin.rect):
+				coin.kill()
+				coins.remove(coin)
 
 class Box(Sprite):
 	def __init__(self, x, y):
 		super().__init__("./assets/boxAlt.png", x, y)
+
+class Coin(Sprite):
+	def __init__(self, x, y, id, is_collected):
+		super().__init__("./assets/coin/coin0.png", x, y)
+		self.id = id
+		self.is_collected = is_collected
+		self.index = 0
+		img_size = (60, 60)
+		self.cycle = [
+			pygame.image.load(f"./assets/coin/coin{i}.png")
+			for i in range(0, 9)
+		]
+		self.cycle = [
+			pygame.transform.scale(img, img_size) 
+			for img in self.cycle
+		]
+
+	def animate(self):
+		self.image = self.cycle[self.index]
+
+		if self.index >= len(self.cycle) - 1:
+			self.index = 0
+		else:
+			self.index += 1
+
+	def update(self):
+		if not self.is_collected:
+			if pygame.time.get_ticks() % 5 == 0:
+				self.animate()
+

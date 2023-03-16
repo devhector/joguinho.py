@@ -1,7 +1,32 @@
 import socket
 from _thread import *
 
+old_players = []
 players = []
+score = []
+
+coins = [
+	'0,20,20,False',
+	'1,20,320,False',
+	'2,220,170,False',
+	'3,220,475,False',
+	'4,430,580,False',
+	'5,840,160,False',
+	'6,840,300,False',
+	'7,840,440,False',
+	'8,840,580,False',
+	'9,630,160,False',
+	'10,630,300,False',
+	'11,630,440,False',
+	'12,630,580,False',
+]
+
+def parser(data):
+	method = data.split(" ")[0]
+	aux = data.split(" ")[1]
+	aux = aux[2:-2]
+	data = aux.split("\n")
+	return method, data
 
 def threaded_client(conn, player):
 	conn.send(str(player).encode())
@@ -10,18 +35,51 @@ def threaded_client(conn, player):
 		try:
 			data = conn.recv(2048).decode()
 			if not data:
-				print("Desconectado")
-				players.remove(player)
-				print(players)
+				print(f"Jogador {player} desconectado")
+				players[player] = "-42"
 				break
 			else:
-				players[player] = data
-				message = [p for i, p in enumerate(players) if i != player and p != "-42,-42,-42,-42"]
-				print(message)
-				conn.sendall(str(message).encode())
-		
+				method, data = parser(data)
+
+				if method == "UPDATE":
+					players[player] = data
+
+					msg = "UPDATE_USERS ("
+					for _id, content in enumerate(players):
+						if _id != player and content != "-42":
+							msg += f"\n{content}"
+					msg += "\n)"
+					conn.sendall(str(msg).encode())
+
+				if method == "GAME" and len(players) == 2:
+					msg = "GAME (\nstart\n)"
+					conn.send(str(msg).encode())
+				
+				if method == "GET_COINS":
+					msg = "UPDATE_COINS ("
+					for coin in coins:
+						msg += f"\n{coin}"
+					msg += "\n)"
+					conn.send(str(msg).encode())
+				
+				if method == "UPDATE_COIN":
+					score[player] += 1
+					print(f"score({player}): ", score[player])
+
+				_sum = 0
+				for i in score:
+					_sum += i
+
+				if _sum == 12:
+					for i in range(len(score)):
+						if score[i] == max(score):
+							winner = i
+					conn.send(str(f"GAME_OVER (\n{winner}\n)").encode())
+				
 		except:
 			break
+
+
 	conn.close()
 
 def main():
@@ -36,7 +94,7 @@ def main():
 	except socket.error as e:
 		print("bind erro: " + str(e))
 
-	s.listen(4)
+	s.listen(2)
 	print("Aguardando conexão, servidor iniciado")
 
 	player = 0
@@ -44,7 +102,8 @@ def main():
 		conn, addr = s.accept()
 		print("Conectado a:", addr)
 
-		players.append(f"-42,-42,-42,-42")
+		players.append("-42")
+		score.append(0)
 		start_new_thread(threaded_client, (conn, player))
 		player += 1
 
