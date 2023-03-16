@@ -163,13 +163,25 @@ def main():
 		boxes.draw(screen)
 		pygame.display.update()
 
-	win_player = str(int(win_player) + 1)
-	text = font.render(f"GAME OVER | PLAYER {win_player} WIN!", True, (240, 162, 60))
+	font2 = pygame.font.Font("./assets/font/Bubble_Bobble.ttf", 30)
+	created_text = font2.render("Created by: HECTOR and KATHE", True, (240, 102, 60))
+	text = font.render(f"GAME OVER!", True, (240, 162, 60))
+
+	if win_player == player.id:
+		text_final = font.render(f"YOU WIN!", True, (240, 162, 90))
+	else:
+		text_final = font.render(f"YOU LOSE!", True, (240, 162, 90))
+	
 	text2 = font.render("PRESS ESC TO QUIT", True, (240, 162, 60))
 	textRect = text.get_rect()
 	textRect2 = text2.get_rect()
-	textRect.center = (WIDTH // 2, HEIGHT // 2 - 100)
-	textRect2.center = (WIDTH // 2, HEIGHT // 2)
+	textRectFinal = text_final.get_rect()
+	textRectCreated = created_text.get_rect()
+
+	textRectCreated.center = (WIDTH // 2, HEIGHT // 2 - 200)
+	textRectFinal.center = (WIDTH // 2, HEIGHT // 2 - 100)
+	textRect.center = (WIDTH // 2, HEIGHT // 2)
+	textRect2.center = (WIDTH // 2, HEIGHT // 2 + 100)
 
 	run = True
 	while run:
@@ -182,7 +194,9 @@ def main():
 			pygame.quit()
 			quit()
 		screen.fill(BACKGROUND)
+		screen.blit(created_text, textRectCreated)
 		screen.blit(text, textRect)
+		screen.blit(text_final, textRectFinal)
 		screen.blit(text2, textRect2)
 		pygame.display.update()
 
