@@ -156,6 +156,7 @@ class Player(Sprite):
 	def check_collect_coins(self, coins):
 		for coin in coins:
 			if self.rect.colliderect(coin.rect):
+				print("coin collected: id = ", coin.id, "")
 				coin.kill()
 				coins.remove(coin)
 				self.coins_collected += 1

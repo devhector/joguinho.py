@@ -6,7 +6,7 @@ players = []
 score = []
 
 coins = [
-	'0,20,20,False',
+	'0,430,420,False',
 	'1,20,320,False',
 	'2,220,170,False',
 	'3,220,475,False',
@@ -66,20 +66,13 @@ def threaded_client(conn, player):
 					score[player] += 1
 					print(f"score({player}): ", score[player])
 
-				_sum = 0
-				for i in score:
-					_sum += i
-
-				if _sum == 12:
-					for i in range(len(score)):
-						if score[i] == max(score):
-							winner = i
+				if sum(score) == len(coins):
+					for player_id in range(len(score)):
+						if score[player_id] == max(score):
+							winner = player_id
 					conn.send(str(f"GAME_OVER (\n{winner}\n)").encode())
-				
 		except:
 			break
-
-
 	conn.close()
 
 def main():
