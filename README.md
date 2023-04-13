@@ -3,6 +3,8 @@
 ## Descrição
 Jogo desenvolvido para a disciplina de Redes de computadores, usando socket TCP.
 
+https://user-images.githubusercontent.com/31700014/231784643-bc438a09-a926-4142-a582-84911936b935.mp4
+
 ### Instalação
 Criar um ambiente virtual e instalar as dependências:
 
@@ -24,5 +26,5 @@ Para executar o servidor:
 Para executar o cliente:
 `python client.py`
 
-https://user-images.githubusercontent.com/31700014/225479111-00d6898d-1b4a-4aff-bb9a-8b2bd9a045dc.mp4
+
 
